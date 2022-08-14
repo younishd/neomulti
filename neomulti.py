@@ -4,39 +4,71 @@ from pynput.keyboard import Key, Listener
 from time import sleep
 import subprocess
 from obswebsocket import obsws, requests
+import threading
+import os
+import signal
 
 
 def main():
+    total_instances = 2
     instance = 1
     delay = 0.05
+    freeze_after = 15
     windows = {}
     ready = False
+    timer = None
 
     def current_window():
         return subprocess.run(["xdotool", "getactivewindow"], capture_output=True, check=True).stdout.decode().strip()
+
+    def wid_to_pid(wid):
+        return subprocess.run(["xdotool", "getwindowpid", wid], capture_output=True, check=True).stdout.decode().strip()
 
     def focus_window(wid):
         subprocess.run(["xdotool", "windowactivate", "--sync", wid], capture_output=True, check=True)
 
     def on_release(key):
-        nonlocal instance, windows, ready, obs
+        nonlocal instance, windows, ready, obs, timer
+
         if key == Key.f8:
             if not ready:
-                if len(windows) == 0:
-                    windows[1] = current_window()
-                else:
-                    windows[2] = current_window()
+                idx = total_instances - len(windows)
+                wid = current_window()
+                pid = wid_to_pid(wid)
+                windows[idx] = (wid, pid)
+
+                print(f"instance #{idx}: wid {wid}, pid {pid}")
+
+                if total_instances == len(windows):
                     ready = True
                 return
 
-            instance = 3 - instance
+            if timer is not None:
+                timer.cancel()
+            timer = threading.Timer(freeze_after, freeze, [windows[instance][2]])
+            timer.start()
+
+            instance = instance % total_instances + 1
+
+            unfreeze(windows[instance][2])
+
             press("f11")
             press("f6")
+
             obs.call(requests.SetCurrentScene(f"Multi {instance}"))
+
             sleep(delay)
-            focus_window(windows[instance])
+
+            focus_window(windows[instance][1])
+
             press("f11")
             press("esc")
+
+    def freeze(pid):
+        os.kill(pid, signal.SIGSTOP)
+
+    def unfreeze(pid):
+        os.kill(pid, signal.SIGCONT)
 
     obs = obsws("localhost", 4444, "")
     obs.connect()
