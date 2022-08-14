@@ -30,11 +30,12 @@ def main():
                 return
 
             instance = 3 - instance
+            press("f11")
             press("f6")
-            sleep(delay)
             obs.call(requests.SetCurrentScene(f"Multi {instance}"))
             sleep(delay)
             focus_window(windows[instance])
+            press("f11")
             press("esc")
 
     obs = obsws("localhost", 4444, "")
