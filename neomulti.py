@@ -85,7 +85,7 @@ def main():
         with Listener(on_release=on_release) as listener:
             listener.join()
     except KeyboardInterrupt:
-        for _, w in windows:
+        for _, w in windows.items():
             unfreeze(w[1])
 
 
