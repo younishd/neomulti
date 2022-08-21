@@ -86,6 +86,7 @@ def main():
         "-i",
         "--instances",
         default=2,
+        type=int,
         help="number of minecraft instances",
     )
     args = parser.parse_args()
