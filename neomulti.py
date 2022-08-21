@@ -10,6 +10,7 @@ import threading
 import os
 import signal
 import sys
+import argparse
 
 
 def current_window():
@@ -34,16 +35,6 @@ def unfreeze(pid):
 
 
 def main():
-    total_instances = 2
-    instance = 1
-    delay = 0.05
-    freeze_after = 15
-    windows = {}
-    ready = False
-    timer = None
-
-    pyautogui.FAILSAFE = False
-
     def on_release(key):
         nonlocal instance, windows, ready, obs, timer
 
@@ -80,6 +71,25 @@ def main():
 
             press("f11")
             press("esc")
+
+    instance = 1
+    delay = 0.05
+    freeze_after = 15
+    windows = {}
+    ready = False
+    timer = None
+    pyautogui.FAILSAFE = False
+    parser = argparse.ArgumentParser(
+        description="Neo's multi instance resetter for Minecraft speedrunning on Linux.", prog="neomulti"
+    )
+    parser.add_argument(
+        "-i",
+        "--instances",
+        default=2,
+        help="number of minecraft instances",
+    )
+    args = parser.parse_args()
+    total_instances = args.instances
 
     try:
         obs = obsws("localhost", 4444, "")
