@@ -5,9 +5,11 @@ from pynput.keyboard import Key, Listener
 from time import sleep
 import subprocess
 from obswebsocket import obsws, requests
+from obswebsocket.exceptions import ConnectionFailure
 import threading
 import os
 import signal
+import sys
 
 
 def current_window():
@@ -85,6 +87,12 @@ def main():
         with Listener(on_release=on_release) as listener:
             listener.join()
     except KeyboardInterrupt:
+        print("goodbye")
+        return
+    except ConnectionFailure:
+        print("error: failed to connect to obs!")
+        sys.exit(1)
+    finally:
         for _, w in windows.items():
             unfreeze(w[1])
 
