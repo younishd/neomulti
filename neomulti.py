@@ -31,6 +31,7 @@ def freeze(pid):
 
 
 def unfreeze(pid):
+    print(f"unfreeze {pid}")
     os.kill(int(pid), signal.SIGCONT)
 
 
@@ -51,14 +52,16 @@ def main():
                     ready = True
                 return
 
-            if timer is not None:
-                timer.cancel()
-            timer = threading.Timer(freeze_after, freeze, [windows[instance][1]])
-            timer.start()
+            if not no_freeze:
+                if timer is not None:
+                    timer.cancel()
+                timer = threading.Timer(freeze_after, freeze, [windows[instance][1]])
+                timer.start()
 
             instance = instance % total_instances + 1
 
-            unfreeze(windows[instance][1])
+            if not no_freeze:
+                unfreeze(windows[instance][1])
 
             press("f11")
             press("f6")
@@ -73,7 +76,7 @@ def main():
             press("esc")
 
     instance = 1
-    delay = 0.05
+    delay = 0.1
     freeze_after = 15
     windows = {}
     ready = False
@@ -89,8 +92,16 @@ def main():
         type=int,
         help="number of minecraft instances",
     )
+    parser.add_argument(
+        "-F",
+        "--no-freeze",
+        default=False,
+        action="store_true",
+        help="do not freeze background instances.",
+    )
     args = parser.parse_args()
     total_instances = args.instances
+    no_freeze = args.no_freeze
 
     try:
         obs = obsws("localhost", 4444, "")
@@ -104,8 +115,9 @@ def main():
         print("error: failed to connect to obs!")
         sys.exit(1)
     finally:
-        for _, w in windows.items():
-            unfreeze(w[1])
+        if not no_freeze:
+            for _, w in windows.items():
+                unfreeze(w[1])
 
 
 if __name__ == "__main__":
