@@ -117,7 +117,10 @@ def main():
     finally:
         if not no_freeze:
             for _, w in windows.items():
-                unfreeze(w[1])
+                try:
+                    unfreeze(w[1])
+                except:
+                    continue
 
 
 if __name__ == "__main__":
