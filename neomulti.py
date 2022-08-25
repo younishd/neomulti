@@ -55,12 +55,12 @@ def main():
             if not no_freeze:
                 if timer_freeze[instance] is not None:
                     timer_freeze[instance].cancel()
-                timer_freeze[instance] = threading.Timer(freeze_after, freeze, (windows[instance][1]))
+                timer_freeze[instance] = threading.Timer(freeze_after, freeze, (windows[instance][1],))
                 timer_freeze[instance].start()
 
             if timer_scene is not None:
                 timer_scene.cancel()
-            timer_scene = threading.Timer(freeze_after, obs.call, (requests.SetCurrentScene("Multi")))
+            timer_scene = threading.Timer(freeze_after, obs.call, (requests.SetCurrentScene("Multi"),))
             timer_scene.start()
 
             instance = instance % total_instances + 1
