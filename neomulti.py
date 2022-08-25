@@ -37,7 +37,7 @@ def unfreeze(pid):
 
 def main():
     def on_release(key):
-        nonlocal instance, windows, ready, obs, timer
+        nonlocal instance, windows, ready, obs, timer_freeze, timer_scene
 
         if key == Key.f8:
             if not ready:
@@ -53,10 +53,15 @@ def main():
                 return
 
             if not no_freeze:
-                if timer is not None:
-                    timer.cancel()
-                timer = threading.Timer(freeze_after, freeze, [windows[instance][1]])
-                timer.start()
+                if timer_freeze[instance] is not None:
+                    timer_freeze[instance].cancel()
+                timer_freeze[instance] = threading.Timer(freeze_after, freeze, (windows[instance][1]))
+                timer_freeze[instance].start()
+
+            if timer_scene is not None:
+                timer_scene.cancel()
+            timer_scene = threading.Timer(freeze_after, obs.call, (requests.SetCurrentScene("Multi")))
+            timer_scene.start()
 
             instance = instance % total_instances + 1
 
@@ -66,7 +71,7 @@ def main():
             press("f11")
             press("f6")
 
-            obs.call(requests.SetCurrentScene(f"Multi {instance}"))
+            obs.call(requests.SetCurrentScene(f"Multi {instance}/{total_instances}"))
 
             sleep(delay)
 
@@ -80,7 +85,6 @@ def main():
     freeze_after = 15
     windows = {}
     ready = False
-    timer = None
     pyautogui.FAILSAFE = False
     parser = argparse.ArgumentParser(
         description="Neo's multi instance resetter for Minecraft speedrunning on Linux.", prog="neomulti"
@@ -102,6 +106,8 @@ def main():
     args = parser.parse_args()
     total_instances = args.instances
     no_freeze = args.no_freeze
+    timer_freeze = [None] * total_instances
+    timer_scene = None
 
     try:
         obs = obsws("localhost", 4444, "")
