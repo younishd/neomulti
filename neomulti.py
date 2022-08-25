@@ -52,11 +52,10 @@ def main():
                     ready = True
                 return
 
-            if not no_freeze:
-                if timer_freeze[instance - 1] is not None:
-                    timer_freeze[instance - 1].cancel()
-                timer_freeze[instance - 1] = threading.Timer(freeze_after, freeze, (windows[instance][1],))
-                timer_freeze[instance - 1].start()
+            if timer_freeze[instance - 1] is not None:
+                timer_freeze[instance - 1].cancel()
+            timer_freeze[instance - 1] = threading.Timer(freeze_after, freeze, (windows[instance][1],))
+            timer_freeze[instance - 1].start()
 
             if timer_scene is not None:
                 timer_scene.cancel()
@@ -65,8 +64,9 @@ def main():
 
             instance = instance % total_instances + 1
 
-            if not no_freeze:
-                unfreeze(windows[instance][1])
+            if timer_freeze[instance - 1] is not None:
+                timer_freeze[instance - 1].cancel()
+            unfreeze(windows[instance][1])
 
             press("f11")
             press("f6")
@@ -96,16 +96,8 @@ def main():
         type=int,
         help="number of minecraft instances",
     )
-    parser.add_argument(
-        "-F",
-        "--no-freeze",
-        default=False,
-        action="store_true",
-        help="do not freeze background instances.",
-    )
     args = parser.parse_args()
     total_instances = args.instances
-    no_freeze = args.no_freeze
     timer_freeze = [None] * total_instances
     timer_scene = None
 
@@ -121,12 +113,11 @@ def main():
         print("error: failed to connect to obs!")
         sys.exit(1)
     finally:
-        if not no_freeze:
-            for _, w in windows.items():
-                try:
-                    unfreeze(w[1])
-                except:
-                    continue
+        for _, w in windows.items():
+            try:
+                unfreeze(w[1])
+            except:
+                continue
 
 
 if __name__ == "__main__":
