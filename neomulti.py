@@ -53,10 +53,10 @@ def main():
                 return
 
             if not no_freeze:
-                if timer_freeze[instance] is not None:
-                    timer_freeze[instance].cancel()
-                timer_freeze[instance] = threading.Timer(freeze_after, freeze, (windows[instance][1],))
-                timer_freeze[instance].start()
+                if timer_freeze[instance - 1] is not None:
+                    timer_freeze[instance - 1].cancel()
+                timer_freeze[instance - 1] = threading.Timer(freeze_after, freeze, (windows[instance][1],))
+                timer_freeze[instance - 1].start()
 
             if timer_scene is not None:
                 timer_scene.cancel()
