@@ -37,7 +37,7 @@ def unfreeze(pid):
 
 def main():
     def on_release(key):
-        nonlocal instance, windows, ready, obs, timer_freeze, timer_scene
+        nonlocal instance, windows, ready, obs, timer_freeze, timer_scene, delay
 
         if key == Key.f8:
             if not ready:
@@ -81,7 +81,6 @@ def main():
             press("esc")
 
     instance = 1
-    delay = 0.1
     freeze_after = 15
     windows = {}
     ready = False
@@ -96,8 +95,16 @@ def main():
         type=int,
         help="number of minecraft instances",
     )
+    parser.add_argument(
+        "-d",
+        "--delay",
+        default=0.1,
+        type=float,
+        help="delay in seconds between resets"
+    )
     args = parser.parse_args()
     total_instances = args.instances
+    delay = args.delay
     timer_freeze = [None] * total_instances
     timer_scene = None
 
